@@ -5,7 +5,7 @@ import itertools as it
 from kafka import KafkaProducer, KafkaConsumer
 
 
-def search_books(query):
+def search_books(query: dict):
 
     url = get_url(query)
     response_json = requests.get(url)
@@ -14,7 +14,7 @@ def search_books(query):
     return response_json
 
 
-def get_url(query) -> str:
+def get_url(query: dict) -> str:
 
     base_url = "https://openlibrary.org/search.json"
     query_url = '&'.join([f'{key}={value}' for key, value in query.items()])
@@ -23,7 +23,7 @@ def get_url(query) -> str:
     return url
 
 
-def get_producer(kafka_servers):
+def get_producer(kafka_servers: list[str]) -> KafkaProducer:
 
     producer = KafkaProducer(bootstrap_servers=kafka_servers,
                              value_serializer=lambda x: json.dumps(x).encode('utf-8')
@@ -32,7 +32,7 @@ def get_producer(kafka_servers):
     return producer
 
 
-def get_consumer(kafka_servers):
+def get_consumer(kafka_servers: list[str]) -> KafkaConsumer:
 
     consumer = KafkaConsumer(bootstrap_servers=kafka_servers,
                              auto_offset_reset='earliest',
@@ -43,7 +43,7 @@ def get_consumer(kafka_servers):
     return consumer
 
 
-def get_kafka_servers():
+def get_kafka_servers() -> list[str]:
 
     kafka_hosts = ['localhost']
     kafka_ports = ['9092']
