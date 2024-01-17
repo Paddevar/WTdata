@@ -1,0 +1,13 @@
+OpenLibrary:
+
+  query1:
+    subject: computer
+    limit: 10 # If not specified, OL automatically returns 100 books.
+
+  query2:
+    subject: programming
+    limit: 10
+
+
+#NewSite:
+#  query1:
