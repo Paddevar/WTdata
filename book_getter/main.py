@@ -1,11 +1,16 @@
-# External imports
-import time
-import yaml
 
 # Internal imports
+import config.config as cfg
 import open_library_scraper as ol
 import kafka_publisher
 
+# External imports
+import time
+# from configparser import ConfigParser
+import yaml
+import logging
+
+logger = logging.getLogger(__name__)
 
 def main():
 
@@ -23,9 +28,10 @@ def main():
 
 
 def publish_queries(override_query=None):
-    '''Runs the queries configured in queries.yml, transforms the data and publishes it to kafka with one line per book'''
+    """Runs the queries configured in queries.yml, transforms the data
+    and publishes it to kafka with one line per book"""
 
-    with open('queries.yml', 'r') as file:
+    with open('config/queries.yml', 'r') as file:
         queries = yaml.safe_load(file)
 
     # TODO: configure topics in query file? Allows for query-dependent topics.
@@ -41,13 +47,15 @@ def publish_queries(override_query=None):
 
             if override_query:
                 site_query = {**site_query, **override_query}
+            logger.info(f'Sending API call to {site} with {site_query=}.')
 
             df = site_scraper(site_query)
+            logger.info(f'Received {len(df.rows())} valid books.')
+
             kafka_publisher.publish_df_rows(df, producer, topic)
 
 
 def get_site_scraper(site: str) -> callable:
-    
     """Returns the correct scraper for each site."""
     if site == 'OpenLibrary':
         return ol.open_library_books_to_df
