@@ -13,8 +13,6 @@ def configure_logging():
     with open('config/logconfig.yml', 'r') as file:
         logconfig = yaml.safe_load(file)
 
-    root_log_level = get_config_value('LOGGING', 'root_log_level')
-    logconfig['root']['level'] = root_log_level
     logging.config.dictConfig(logconfig)
 
 
