@@ -1,10 +1,11 @@
 OpenLibrary:
 
-  query1:
+#  query 1, 2 etc. The names are arbitrary.
+  q1:
     subject: computer
     limit: 10 # If not specified, OL automatically returns 100 books.
 
-  query2:
+  q2:
     subject: programming
     limit: 10
 
