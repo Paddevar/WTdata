@@ -1,0 +1,6 @@
+numpy
+pandas
+polars
+requests
+pyyaml
+kafka-python
