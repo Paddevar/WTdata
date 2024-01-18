@@ -1,7 +1,13 @@
+# External imports
 import requests
 import json
 import polars as pl
+import logging
 
+# Internal imports
+import config.config as cfg
+
+logger = logging.getLogger(__name__)
 
 def open_library_books_to_df(query: dict) -> pl.DataFrame:
     """Main function of this module. Takes in a query dict, runs the query to the OpenLibrary API
