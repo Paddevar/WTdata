@@ -23,6 +23,7 @@ def main():
 
 
 def publish_queries(override_query=None):
+    '''Runs the queries configured in queries.yml, transforms the data and publishes it to kafka with one line per book'''
 
     with open('queries.yml', 'r') as file:
         queries = yaml.safe_load(file)
@@ -33,6 +34,7 @@ def publish_queries(override_query=None):
 
     for site, site_queries in queries.items():
 
+        # Each website has its own scraping functions.
         site_scraper = get_site_scraper(site)
 
         for site_query in site_queries.values():
@@ -45,6 +47,8 @@ def publish_queries(override_query=None):
 
 
 def get_site_scraper(site: str) -> callable:
+    
+    """Returns the correct scraper for each site."""
     if site == 'OpenLibrary':
         return ol.open_library_books_to_df
 
@@ -53,7 +57,7 @@ def get_site_scraper(site: str) -> callable:
     #     return SiteScraper
 
     else:
-        raise Exception(f'Unknown website \"{site}\", check query configuration file.')
+        raise Exception(f'Unknown website \"{site}\", check spelling in query configuration file.')
 
 
 if __name__ == '__main__':

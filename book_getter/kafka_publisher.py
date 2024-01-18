@@ -31,9 +31,11 @@ def get_kafka_servers() -> list[str]:
     config = ConfigParser()
     config.read('kafka.conf')
 
+    # Use default server localhost:9092 if nothing else is configured
     kafka_servers = config['SERVERS']['servers']
     kafka_servers = config['DEFAULT']['server'] if kafka_servers is None else kafka_servers
 
+    # For consistency, always return a list, even if there is only one Kafka server configured.
     if kafka_servers is not list:
         kafka_servers = [kafka_servers]
 
@@ -41,6 +43,7 @@ def get_kafka_servers() -> list[str]:
 
 
 def publish_df_rows(df_to_publish, producer, topic) -> None:
+    """Publish a dataframe row by row to the configured Kafka server and topic."""
 
     df_rows = df_to_publish.to_dicts()
 
