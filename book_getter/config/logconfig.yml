@@ -1,0 +1,42 @@
+version: 1
+
+root:
+  level: INFO # DEBUG, INFO, WARN, ERROR, CRITICAL. If not configured, defaults to WARN.
+  handlers: [console]
+
+formatters:
+  simple:
+    format: '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+
+handlers:
+
+  console:
+    class: logging.StreamHandler
+    level: DEBUG
+    formatter: simple
+    stream: ext://sys.stdout
+
+  file:
+    class: logging.FileHandler
+    level: DEBUG
+    formatter: simple
+    filename: 'bookgetter.log'
+    mode: 'w'
+
+loggers:
+
+  kafka_publisher:
+    level: DEBUG
+    handlers: [console]
+    propagate: no
+
+  open_library_scraper:
+    level: DEBUG
+    handlers: [console]
+    propagate: no
+
+  __main__:
+    level: DEBUG
+    handlers: [console]
+    propagate: no
+
