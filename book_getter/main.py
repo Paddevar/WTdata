@@ -1,4 +1,3 @@
-
 # Internal imports
 import config.config as cfg
 import open_library_scraper as ol
@@ -12,8 +11,8 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-def main():
 
+def main():
     # Runs all queries once upon startup and publishes them to the configured kafka server(s).
     publish_queries()
 
@@ -27,18 +26,16 @@ def main():
         time.sleep(5)
 
 
-def publish_queries(override_query=None):
+def publish_queries(override_query: dict = None):
     """Runs the queries configured in queries.yml, transforms the data
-    and publishes it to kafka with one line per book"""
-
-    with open('config/queries.yml', 'r') as file:
-        queries = yaml.safe_load(file)
+    and publishes it to kafka with one line per book. The configured queries can be overridden by the values in
+    the passed dictionary."""
 
     # TODO: configure topics in query file? Allows for query-dependent topics.
     topic = 'open_library_books'
     producer = kafka_publisher.get_producer()
 
-    for site, site_queries in queries.items():
+    for site, site_queries in cfg.queries.items():
 
         # Each website has its own scraping functions.
         site_scraper = get_site_scraper(site)
