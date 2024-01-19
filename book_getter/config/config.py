@@ -3,15 +3,13 @@ import logging
 import logging.config
 from configparser import ConfigParser
 from pathlib import Path
-
+from dataclasses import dataclass
 
 # Define config file locations
 config_dir = Path(__file__).parent
 param_file = config_dir / 'params.conf'
-logconfig_file = config_dir / 'logconfig.yml'
 queries_file = config_dir / 'queries.yml'
-
-print(queries_file)
+logconfig_file = config_dir / 'logconfig.yml'
 
 # Load queries
 with open(queries_file, 'r') as file:
@@ -26,8 +24,8 @@ def configure_logging():
 
     logging.config.dictConfig(logconfig)
 
-configure_logging()
 
+configure_logging()
 
 # Load global parameters and use them to set the kafka bootstrap-servers.
 config = ConfigParser()
@@ -35,7 +33,6 @@ config.read(param_file)
 
 
 def get_kafka_servers() -> list[str]:
-
     # Use default server localhost:9092 if nothing else is configured
     kafka_servers = get_config_value('SERVERS', 'servers')
 
@@ -55,4 +52,9 @@ def get_config_value(section: str, config_name: str):
 
     return value
 
+
 kafka_servers = get_kafka_servers()
+listen_rate = int(get_config_value('MODE', 'listen_rate'))
+populate = config.getboolean('MODE', 'populate')
+listen = config.getboolean('MODE', 'listen')
+
