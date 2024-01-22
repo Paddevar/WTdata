@@ -44,7 +44,10 @@ def request_to_df(query: dict) -> pl.DataFrame:
     """Turns the query result into a polars DataFrame."""
     book_results = search_books(query)
     data=[book_results['items'][i]['volumeInfo'] for i in range(len(book_results['items'])) ]
-    book_df = pl.DataFrame(data=data)
+    thumbnail_data=[book_results['items'][i]['volumeInfo']['imageLinks']['thumbnail'] for i in range(len(book_results['items'])) ]
+    incomplete_book_df = pl.DataFrame(data=data)
+    book_df=incomplete_book_df.with_columns(pl.Series(name='thumbnail', values=thumbnail_data))
+
 
     return book_df
 
@@ -58,6 +61,7 @@ def filter_book_df(book_df: pl.DataFrame) -> pl.DataFrame:
                                          # Only pick out the first author.
                                          pl.col('authors').list.first().alias('author')
                                          ,pl.col('categories').alias('tag')
+                                         ,pl.col('thumbnail').alias('imageUrl')
                                          ).drop_nulls()
     # If any of the required columns are not found in the query result, return an empty Dataframe.
     except pl.exceptions.ColumnNotFoundError:
