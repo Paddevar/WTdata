@@ -10,5 +10,9 @@ OpenLibrary:
     limit: 10
 
 
-#NewSite:
-#  query1:
+GoogleAPI:
+#  query 1, 2 etc. The names are arbitrary.
+  query1:
+    intitle: sql
+    categories: computer
+

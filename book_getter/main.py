@@ -1,6 +1,7 @@
 # Internal imports
 import config.config as cfg
 import open_library_scraper as ol
+import google_scraper as gs
 import kafka_publisher
 
 # External imports
@@ -19,6 +20,7 @@ def main():
         # Listens for the newest book for the configured queries in a loop and publishes it,
         # until stopped manually.
         # TODO: only publish if the book has not been published to kafka yet! Currently there's no uniqueness check.
+    
         listening_query = {'sort': 'new',
                            'limit': 1}
         while True:
@@ -57,6 +59,9 @@ def get_site_scraper(site: str) -> callable:
     if site == 'OpenLibrary':
         return ol.open_library_books_to_df
 
+    elif site == 'GoogleAPI':
+        return gs.google_api_books_to_df
+    
     # New websites can be added as follows:
     # elif site == 'NewWebsite':
     #     return SiteScraper
