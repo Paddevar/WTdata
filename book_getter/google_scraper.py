@@ -57,7 +57,7 @@ def filter_book_df(book_df: pl.DataFrame) -> pl.DataFrame:
         title_author_df = book_df.select(pl.col('title'),
                                          # Only pick out the first author.
                                          pl.col('authors').list.first().alias('author')
-                                         ,pl.col('authors').alias('tag')
+                                         ,pl.col('categories').alias('tag')
                                          ).drop_nulls()
     # If any of the required columns are not found in the query result, return an empty Dataframe.
     except pl.exceptions.ColumnNotFoundError:
@@ -69,7 +69,7 @@ def filter_book_df(book_df: pl.DataFrame) -> pl.DataFrame:
 def main():
     """For query testing purposes only."""
     query = {'subject': 'flowers',
-             # 'title': 'test',
+              #'intitle': 'test',
              'sort': 'new',
              # 'limit': 1
              }

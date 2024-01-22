@@ -13,6 +13,6 @@ OpenLibrary:
 GoogleAPI:
 #  query 1, 2 etc. The names are arbitrary.
   query1:
-    intitle: flowers
-    inauthor: keyes
+    intitle: sql
+    categories: computer
 
