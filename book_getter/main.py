@@ -12,9 +12,11 @@ logger = logging.getLogger(__name__)
 
 
 def main():
+    producer = kafka_publisher.get_producer()
+
     if cfg.populate:
         # Runs all queries once upon startup and publishes them to the configured kafka server(s).
-        publish_queries()
+        publish_queries(producer)
 
     if cfg.listen:
         # Listens for the newest book for the configured queries in a loop and publishes it,
@@ -24,18 +26,17 @@ def main():
         listening_query = {'sort': 'new',
                            'limit': 1}
         while True:
-            publish_queries(override_query=listening_query)
+            publish_queries(producer, listen=True)
             time.sleep(cfg.listen_rate)
 
 
-def publish_queries(override_query: dict = None):
+def publish_queries(producer, listen= False):
     """Runs the queries configured in queries.yml, transforms the data
     and publishes it to kafka with one line per book. The configured queries can be overridden by the values in
     the passed dictionary."""
 
     # TODO: configure topics in query file? Allows for query-dependent topics.
-    topic = 'open_library_books'
-    producer = kafka_publisher.get_producer()
+    # topic = 'open_library_books'
 
     for site, site_queries in cfg.queries.items():
 
@@ -44,14 +45,15 @@ def publish_queries(override_query: dict = None):
 
         for site_query in site_queries.values():
 
-            if override_query:
-                site_query = {**site_query, **override_query}
+            if listen:
+                listen_query = get_listening_query(site)
+                site_query = {**site_query, **listen_query}
             logger.info(f'Sending API call to {site} with {site_query=}.')
 
             df = site_scraper(site_query)
             logger.info(f'Received {len(df.rows())} valid books.')
 
-            kafka_publisher.publish_df_rows(df, producer, topic)
+            kafka_publisher.publish_df_rows(df, producer, cfg.topic)
 
 
 def get_site_scraper(site: str) -> callable:
@@ -67,8 +69,22 @@ def get_site_scraper(site: str) -> callable:
     #     return SiteScraper
 
     else:
-        raise Exception(f'Unknown website \"{site}\", check spelling in query configuration file.')
+        raise NotImplementedError(f'Unknown website \"{site}\", check spelling in query configuration file.')
 
+
+def get_listening_query(site):
+    """Returns the query used to listen for new books."""
+    # TODO: Should probably me merged with get_site_scraper into one function, e.g. get_site_info()
+    if site == 'OpenLibrary':
+        return {'sort': 'new',
+                'limit': 1}
+
+    elif site == 'GoogleAPI':
+        return {'orderBy': 'newest',
+                'maxResults': 1}
+
+    else:
+        raise NotImplementedError(f'Unknown website \"{site}\", check spelling in query configuration file.')
 
 if __name__ == '__main__':
     main()
