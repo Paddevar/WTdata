@@ -19,7 +19,7 @@ def get_producer() -> KafkaProducer:
 
 def get_consumer() -> KafkaConsumer:
 
-    kafka_servers = get_kafka_servers()
+    kafka_servers = cfg.get_kafka_servers()
     consumer = KafkaConsumer(bootstrap_servers=cfg.kafka_servers,
                              auto_offset_reset='earliest',
                              group_id='counters',
