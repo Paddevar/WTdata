@@ -29,7 +29,6 @@ def search_books(query: dict) -> dict:
 
     return response
 
-
 class GoogleURL:
 
     def __init__(self, query):
@@ -67,8 +66,13 @@ class GoogleURL:
 def request_to_df(query: dict) -> pl.DataFrame:
     """Turns the query result into a polars DataFrame."""
     book_results = search_books(query)
-    data = [book_results['items'][i]['volumeInfo'] for i in range(len(book_results['items']))]
-    book_df = pl.DataFrame(data=data)
+
+    data=[book_results['items'][i]['volumeInfo'] for i in range(len(book_results['items'])) ]
+    thumbnail_data=[book_results['items'][i]['volumeInfo']['imageLinks']['thumbnail'] for i in range(len(book_results['items'])) ]
+    isbn_data=[book_results['items'][i]['volumeInfo']['industryIdentifiers'][0]['identifier'] for i in range(len(book_results['items'])) ]
+    source_data=['googleAPI'] * len(book_results['items'])
+    base_book_df = pl.DataFrame(data=data)
+    book_df=base_book_df.with_columns(pl.Series(name='thumbnail', values=thumbnail_data),pl.Series(name='isbnNumber', values=isbn_data),pl.Series(name='source', values=source_data))
 
     return book_df
 
@@ -81,8 +85,16 @@ def filter_book_df(book_df: pl.DataFrame) -> pl.DataFrame:
         title_author_df = book_df.select(pl.col('title'),
                                          # Only pick out the first author.
                                          pl.col('authors').list.first().alias('author')
-                                         , pl.col('categories').alias('tag')
+                                         ,pl.col('publisher').alias('publisher')
+                                         ,pl.col('publishedDate').alias('releaseDate')
+                                         ,pl.col('description').alias('description')
+                                         ,pl.col('pageCount').alias('pageCount')
+                                         ,pl.col('categories').alias('tag')
+                                         ,pl.col('thumbnail').alias('imageUrl')
+                                         ,pl.col('isbnNumber').alias('isbnNumber')
+                                         ,pl.col('source').alias('source')
                                          ).drop_nulls()
+        
     # If any of the required columns are not found in the query result, return an empty Dataframe.
     except pl.exceptions.ColumnNotFoundError:
         return pl.DataFrame()
@@ -92,12 +104,14 @@ def filter_book_df(book_df: pl.DataFrame) -> pl.DataFrame:
 
 def main():
     """For query testing purposes only."""
+
     query = {'q': 'python',
              'intitle': 'programming',
              # 'title': 'test',
              'orderBy': 'newest',
              "startIndex": 0,
              "maxResults": 1
+
              }
 
     google_url = GoogleURL(query).construct_url()
