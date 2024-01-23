@@ -9,6 +9,7 @@ import config.config as cfg
 
 logger = logging.getLogger(__name__)
 
+
 def google_api_books_to_df(query: dict) -> pl.DataFrame:
     """Main function of this module. Takes in a query dict, runs the query to the OpenLibrary API
     and turns it into a dataframe."""
@@ -21,34 +22,57 @@ def google_api_books_to_df(query: dict) -> pl.DataFrame:
 
 def search_books(query: dict) -> dict:
     """Runs a specific query to the OpenLibrary API and gets the results as a dict."""
-    url = get_url(query)
+    url = GoogleURL(query).construct_url()
     response_json = requests.get(url)
+
     response = json.loads(response_json.text)
 
     return response
 
+class GoogleURL:
 
-def get_url(query: dict) -> str:
-    """Construct the actual url for a specific query."""
-    base_url = "https://www.googleapis.com/books/v1/volumes?q="
-    query_url_part_one = '&'.join([f'{key}:{value}' for key, value in query.items()])
-    query_url_part_two = '&startIndex=0&maxResults=5'
-    key = '&key=AIzaSyAgjT2J6tpZMMkljqrNOKBnLQiFa55zGoQ'
-    url = base_url + query_url_part_one + query_url_part_two + key
+    def __init__(self, query):
+        self.query = query
+        self.base_url = "https://www.googleapis.com/books/v1/volumes?"
+        self.search_fields = ['intitle', 'inauthor', 'inpublisher', 'subject', 'isbn', 'lccn', 'oclc']
 
-    return url
+
+    def construct_url(self) -> str:
+        query_url = self.construct_query_url()
+        url = (self.base_url + query_url)
+
+        logger.info(f'The query url is {url}')
+
+        return url
+
+    def construct_query_url(self) -> str:
+
+        fulltext_query_url = "q=" + self.query['q'].replace(" ", "+")
+        infields_query_url = "+" + "&".join([f'{key}:{value}' for key, value in self.query.items()
+                                             if key in self.search_fields])
+        special_query_url = "&" + "&".join([f'{key}={value}' for key, value in self.query.items()
+                                            if key not in self.search_fields + ['q']])
+
+        return fulltext_query_url + infields_query_url + special_query_url
+
+    def key_separator(self, key: str) -> str:
+
+        if key in self.search_fields:
+            return ":"
+        else:
+            return "="
 
 
 def request_to_df(query: dict) -> pl.DataFrame:
     """Turns the query result into a polars DataFrame."""
     book_results = search_books(query)
+
     data=[book_results['items'][i]['volumeInfo'] for i in range(len(book_results['items'])) ]
     thumbnail_data=[book_results['items'][i]['volumeInfo']['imageLinks']['thumbnail'] for i in range(len(book_results['items'])) ]
     isbn_data=[book_results['items'][i]['volumeInfo']['industryIdentifiers'][0]['identifier'] for i in range(len(book_results['items'])) ]
     source_data=['googleAPI'] * len(book_results['items'])
     base_book_df = pl.DataFrame(data=data)
     book_df=base_book_df.with_columns(pl.Series(name='thumbnail', values=thumbnail_data),pl.Series(name='isbnNumber', values=isbn_data),pl.Series(name='source', values=source_data))
-
 
     return book_df
 
@@ -70,6 +94,7 @@ def filter_book_df(book_df: pl.DataFrame) -> pl.DataFrame:
                                          ,pl.col('isbnNumber').alias('isbnNumber')
                                          ,pl.col('source').alias('source')
                                          ).drop_nulls()
+        
     # If any of the required columns are not found in the query result, return an empty Dataframe.
     except pl.exceptions.ColumnNotFoundError:
         return pl.DataFrame()
@@ -79,15 +104,22 @@ def filter_book_df(book_df: pl.DataFrame) -> pl.DataFrame:
 
 def main():
     """For query testing purposes only."""
-    query = {'subject': 'computers',
-              #'intitle': 'test',
-             'sort': 'new',
-             # 'limit': 1
+
+    query = {'q': 'python',
+             'intitle': 'programming',
+             # 'title': 'test',
+             'orderBy': 'newest',
+             "startIndex": 0,
+             "maxResults": 1
+
              }
 
-    title_author_df = google_api_books_to_df(query)
- 
-    print(title_author_df)
+    google_url = GoogleURL(query).construct_url()
+    # print(google_url)
+    # google_url_constructor(query)
+    # title_author_df = google_api_books_to_df(query)
+
+    # print(title_author_df)
 
 
 if __name__ == '__main__':

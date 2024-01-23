@@ -57,4 +57,4 @@ kafka_servers = get_kafka_servers()
 listen_rate = int(get_config_value('MODE', 'listen_rate'))
 populate = config.getboolean('MODE', 'populate')
 listen = config.getboolean('MODE', 'listen')
-
+topic = get_config_value('SERVERS', 'topic')

@@ -1,18 +1,20 @@
-OpenLibrary:
-
-#  query 1, 2 etc. The names are arbitrary.
-  q1:
-    subject: computer
-    limit: 10 # If not specified, OL automatically returns 100 books.
-
-  q2:
-    subject: programming
-    limit: 10
+#OpenLibrary:
+#
+##  query 1, 2 etc. The names are arbitrary.
+#  q1:
+#    subject: computer
+#    limit: 10 # If not specified, OL automatically returns 100 books.
+#
+#  q2:
+#    subject: programming
+#    limit: 10
 
 
 GoogleAPI:
 #  query 1, 2 etc. The names are arbitrary.
   query1:
-    intitle: sql
-    categories: computer
+    q: computer
+    intitle: programming
+    maxResults: 10
+
 
