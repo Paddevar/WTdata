@@ -48,7 +48,7 @@ def request_to_df(query: dict) -> pl.DataFrame:
     source_data=['googleAPI'] * len(book_results['items'])
     base_book_df = pl.DataFrame(data=data)
     book_df=base_book_df.with_columns(pl.Series(name='thumbnail', values=thumbnail_data),pl.Series(name='isbnNumber', values=isbn_data),pl.Series(name='source', values=source_data))
-    book_df.head(5)
+
 
     return book_df
 
@@ -62,8 +62,8 @@ def filter_book_df(book_df: pl.DataFrame) -> pl.DataFrame:
                                          # Only pick out the first author.
                                          pl.col('authors').list.first().alias('author')
                                          ,pl.col('publisher').alias('publisher')
-                                         #,pl.col('publishDate').alias('releaseDate')
-                                         #,pl.col('description').alias('description')
+                                         ,pl.col('publishedDate').alias('releaseDate')
+                                         ,pl.col('description').alias('description')
                                          ,pl.col('pageCount').alias('pageCount')
                                          ,pl.col('categories').alias('tag')
                                          ,pl.col('thumbnail').alias('imageUrl')
