@@ -93,7 +93,7 @@ def filter_book_df(book_df: pl.DataFrame) -> pl.DataFrame:
                                          ,pl.col('thumbnail').alias('imageUrl')
                                          ,pl.col('isbnNumber').alias('isbnNumber')
                                          ,pl.col('source').alias('source')
-                                         ).drop_nulls()
+                                         ).drop_nulls(subset='title').drop_nulls(subset='author')
         
     # If any of the required columns are not found in the query result, return an empty Dataframe.
     except pl.exceptions.ColumnNotFoundError:
