@@ -1,9 +1,9 @@
-#OpenLibrary:
+OpenLibrary:
 #
 ##  query 1, 2 etc. The names are arbitrary.
-#  q1:
-#    subject: computer
-#    limit: 10 # If not specified, OL automatically returns 100 books.
+  q1:
+    subject: computer
+    limit: 10 # If not specified, OL automatically returns 100 books.
 #
 #  q2:
 #    subject: programming
