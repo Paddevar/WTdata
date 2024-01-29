@@ -120,54 +120,34 @@ df_books['author_name'] = df_books['author_name'].replace('3', 'e', regex=True)
 df_books['author_name'] = df_books['author_name'].replace('4', 'a', regex=True)
 df_books['author_name'] = df_books['author_name'].replace('@', 'a', regex=True)
 df_books['author_name'] = df_books['author_name'].replace('0', 'o', regex=True)
-#%%Create multiple columns from tag column which now contains a list as entries (1 for each tag) 
-error #tags fixen
-tags = df_books['tags'] #make lower case
-unique_tags = sorted(set([x for inner in tags for x in inner]))
-
-# import math
-# import re
-
-# def get_cosine(vec1, vec2):
-#     intersection = set(vec1.keys()) & set(vec2.keys())
-#     numerator = sum([vec1[x] * vec2[x] for x in intersection])
-
-#     sum1 = sum([vec1[x] ** 2 for x in list(vec1.keys())])
-#     sum2 = sum([vec2[x] ** 2 for x in list(vec2.keys())])
-#     denominator = math.sqrt(sum1) * math.sqrt(sum2)
-
-#     if not denominator:
-#         return 0.0
-#     else:
-#         return float(numerator) / denominator
-
-# cosine = get_cosine(unique_tags, unique_tags)
 #%%
-from textblob import TextBlob
-
-def Correct(x):
-    return TextBlob(x).correct()
-
-df_books2 = df_books['description'].apply(Correct)
-
-# def Correct_String(text):
-#     result = ''
-#     text = text.split(' ')
-#     for i in range(len(text)):
-#         text[i] = text[i].strip(',.?!;:()')
-#         text[i] = Correct(text[i])
-#         if i<len(text)-1:
-#             result += str(text[i]) + ' '
-#         else:
-#             result += str(text[i]) + '.'
-#     print(result)
-#     return result
-
-df_books['description_corrected'] = df_books['description'].apply(lambda x: Correct_String(x))
-compare = df_books[['description','description_corrected']]
-#%%
-
 def save_to_csv(file_path):
     df_books.to_csv(file_path)
     
 save_to_csv(r"C:\Users\Ivar\OneDrive\Documenten\Working Talent\Project\WTbackend\data_cleaned.csv") #adjust string to destination for the file
+#%%
+from neuspell import BertChecker
+
+checker = BertChecker()
+checker.from_pretrained("./neuspell-subwordbert-probwordnoise/")
+#%%
+df_books['title_corrected'] = df_books['title'].apply(lambda x: checker.correct(x))
+df_books['description_corrected'] = df_books['description'].apply(lambda x: checker.correct(x))
+#%%
+df_books = df_books.drop(columns=['title','description'])
+df_books = df_books.rename(columns={'title_corrected': 'title', 'description_corrected': 'description'})
+#%%
+def fix_string(text):
+    text = text.replace(' .', '.')
+    text = text.replace(' \' s', '\'s')
+    text = text.replace(' ,', ',')
+    text = text.replace(' - ', '-')
+    text = text.replace(' / ', '/')
+    text = text.replace('C + +', 'C++')
+    text = text.replace(' :', ':')
+    return text
+
+df_books['title'] = df_books['title'].apply(lambda x: fix_string(x))
+df_books['description'] = df_books['description'].apply(lambda x: fix_string(x))
+
+save_to_csv(r"C:\Users\Ivar\OneDrive\Documenten\Working Talent\Project\WTdata\data_corrected.csv")
